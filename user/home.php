@@ -59,8 +59,8 @@ $user_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'Guest';
         <li class="nav-item nav">
         <a class="nav-link" href="logout.php">Logout</a>
        </li>
-       <li class="nav-item nav">
-        <a class="nav-link" href="logout.php">  <?php echo htmlspecialchars($user_name)?></a>
+       <li class="nav-item nav ml-auto ">
+        <a class="nav-link" href="#">  <?php echo htmlspecialchars($user_name)?></a>
        </li>
       </ul>
     </div>
@@ -71,59 +71,181 @@ $user_name = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'Guest';
 
 
 
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags --> 
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <title>Virtual Classroom</title>
+    
+
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+
+    <style>
+        .nav{
+            color:#fff;
+            font-weight:bold;
+        }
+    </style>
+</head>
+<body>
+
+<!-- button for go back  -->
+<div class="">
+<button onclick="goBack()" onclick="reloadPreviousPage()"  class="viewStudentBtn btn btn-primary m-3">Go Back</button>
+
+</div>
+<script>
+        function goBack() {
+            window.history.back();
+
+        }
+        function reloadPreviousPage() {
+        window.history.back();
+    }
+    </script>
+    <!-- button for go back -->
+
 
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                  <h3 id='show'></h3>
+                  <h3 id='show'> <?php echo htmlspecialchars($user_name)?> is not Enrolled for following Courses    </h3>
                   
+ 
+              
                 </div>
                 <div class="card-body">
-
+                  
                     <table id="myTable" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th>Course ID</th>
+                              <th>Course ID</th>
                                 <th>Course Name</th>
                                 <th>Course Credit</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
                                 <th>Action</th>
+                              
                             </tr>
                         </thead>
                         <tbody>
                         <?php
                             require 'config.php';
+                          
+                              $query ="SELECT coursedetails1.*, user_enrolled.u_id AS enrollment_id
+                                FROM coursedetails1
+                                 LEFT JOIN user_enrolled ON coursedetails1.Course_ID = user_enrolled.c_id 
+                                 WHERE user_enrolled.u_id IS NULL";
 
-                            $query = "SELECT * FROM coursedetails1 
-                                LEFT JOIN user ON coursedetails1.Course_ID = user.id 
-                                WHERE user.id = '{$_SESSION['user_id']}' AND c_id IS NULL";
+                               
                             
-                            $query_run = mysqli_query($con, $query);
+                               $query_run = mysqli_query($con, $query);
                         
-                            
+                               
                             if(mysqli_num_rows($query_run) > 0)
                             { 
-                                
-                                foreach($query_run as $instructor)
+                                foreach($query_run as $student)
                                 {
                                   ?>
                                     <tr>
-                                        
-                                        <td><?= $instructor['Course_ID'] ?></td>
-                                        <td><?= $instructor['Course_Name'] ?></td>
-                                        <td><?= $instructor['Course_credit'] ?></td>
+                                   
+                                        <td><?= $student['Course_ID'] ?></td>
+                                        <td><?= $student['Course_Name'] ?></td>
+                                        <td><?= $student['Course_credit'] ?></td>
+                                        <td><?= $student['Start_date'] ?></td>
+                                        <td><?= $student['End_Date'] ?></td>
                                         <td>
-                                            <button type="button" value="<?=$instructor['Course_ID'];?>" class="deleteStudentBtn1 btn btn-danger btn-sm">Delete</button>
-                                            <button type="button" id="instructorview" data-stu-name="<?=$instructor['Course_Name'];?>"  data-stu-id="<?=$instructor['Course_ID'];?>" class="viewStudentBtn btn btn-info btn-sm">View Books</button>
-                                            <button type="button" id="userview" data-stu-name="<?=$instructor['Course_Name'];?>"  data-stu-id="<?=$instructor['Course_ID'];?>" class="viewUserBtn btn btn-secondary btn-sm">View Users</button>
 
-                                            
-                                        </td> 
+                                           <div class="form-check">
+                                          <input class="crs form-check-input" type="checkbox" value="<?= $student['Course_ID'] ?>"                           
+                                          id="flexCheckDefault_<?= $student['Course_ID'] ?>">
+                                          <label class="form-check-label" for="flexCheckDefault_<?= $student['Course_ID'] ?>">
+                                               
+                                          </label>
+                                         </div>
+                                        </td>
+                                        
                                     </tr>
                                     <?php
+                                    
                                 }
                             }
                             ?>
+<button type="button" id="add_course1"  class="viewStudentBtn btn btn-primary  m-3">Add Courses</button>
+
+  
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+<script>  
+   
+        // get username and rollnumber from previous page
+   function getParameterByName(name, url) {
+    if (!url) {
+        url = window.location.href;
+    }
+    name = name.replace(/[[\]]/g, '\\$&');
+    const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+          results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
+$(document).ready(function(){
+
+  var person_id = "<?php echo $_SESSION['user_id']; ?>";
+    $(document).on('click', '#add_course1', function (e) { 
+        e.preventDefault();
+       
+        var courses = [];
+        
+        $(".crs").each(function(){
+            if($(this).is(":checked")){
+                  courses.push($(this).val());
+            }
+        });
+        
+        courses = courses.toString();
+     
+        
+        if(courses.length !== 0){
+           $.ajax({
+            url :"add_course1.php",
+             method : "POST",
+            data : {courses:courses , person_id:person_id},
+            success : function(response){
+             
+              var res = jQuery.parseJSON(response);
+                        if(res.status == 500){
+
+                            alert(res.message);
+                        }else{
+                            alertify.set('notifier','position', 'top-right');
+                            alertify.success(res.message);
+
+                            $('#myTable').load(location.href + " #myTable");
+                        }
+            }
+        });
+        }else{
+           alert("please select at least one course")
+         }
+    });
+});
+
+</script>
+
+</body> 
+</html>
 </body>
 </html>
